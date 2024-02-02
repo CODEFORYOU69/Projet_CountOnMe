@@ -62,7 +62,6 @@ class Calculator {
         
         var operationsToReduce = elements
         
-        // Effectuer d'abord les multiplications et divisions
         while operationsToReduce.contains("*") || operationsToReduce.contains("/") {
             if let index = operationsToReduce.firstIndex(where: { $0 == "*" || $0 == "/" }) {
                 let left = Int(operationsToReduce[index - 1])!
@@ -70,7 +69,6 @@ class Calculator {
                 let right = Int(operationsToReduce[index + 1])!
                 
                 if operand == "/" && right == 0 {
-                    // Retourner nil en cas de tentative de division par zéro
                     return nil
                 }
 
@@ -86,7 +84,6 @@ class Calculator {
         }
 
         
-        // Puis les additions et soustractions
         while operationsToReduce.count > 1 {
             let left = Int(operationsToReduce[0])!
             let operand = operationsToReduce[1]
@@ -104,7 +101,7 @@ class Calculator {
         }
         
         let result = operationsToReduce.first
-        lastResult = result // Stocker le dernier résultat
+        lastResult = result
         return result
     }
     

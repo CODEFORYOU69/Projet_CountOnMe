@@ -16,7 +16,7 @@ class ViewController: UIViewController {
 
     @IBAction func TappedAllClear(_ sender: UIButton) {
         textView.text = ""
-        calculator.clear() // Réinitialise l'instance de Calculator
+        calculator.clear()
     }
     
     @IBAction func tappedCButton(_ sender: UIButton) {
@@ -66,7 +66,7 @@ class ViewController: UIViewController {
             calculator.addElement("+")
             textView.text.append("+")
         } else {
-            presentAlert(message: "Opérateur invalide")
+            presentAlert(message: "invalid Operator")
         }
     }
 
@@ -80,7 +80,7 @@ class ViewController: UIViewController {
         } else if calculator.canAddOperator {
             textView.text.append("-")
         } else {
-            let alertVC = UIAlertController(title: "Zéro!", message: "Un operateur est déja mis !", preferredStyle: .alert)
+            let alertVC = UIAlertController(title: "Zéro!", message: "an operator is still used", preferredStyle: .alert)
             alertVC.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
             self.present(alertVC, animated: true, completion: nil)
         }
@@ -94,48 +94,48 @@ class ViewController: UIViewController {
             calculator.addElement(lastResult)
             calculator.addElement("/")
         } else if calculator.canAddOperator {
-               // Si le dernier élément est zéro, empêcher la division
                if let lastElement = calculator.elements.last, lastElement == "0" {
-                   presentAlert(message: "Division par zéro non autorisée")
+                   presentAlert(message: "Can't divide by zero")
                } else {
                    calculator.addElement("/")
                    textView.text.append("/")
                }
            } else {
-               presentAlert(message: "Opérateur invalide")
+               presentAlert(message: " invalid Operator")
            }
     }
     
     @IBAction func tappedMultiButton(_ sender: UIButton) {
-        // Vérifier si un opérateur peut être ajouté à l'expression
         if let lastResult = calculator.lastResult {
             textView.text = "\(lastResult) *"
             calculator.clear()
             calculator.addElement(lastResult)
             calculator.addElement("*")
         } else if calculator.canAddOperator {
-               calculator.addElement("*") // Ajouter l'opérateur de multiplication
+               calculator.addElement("*")
                textView.text.append("*")
            } else {
-               // Afficher une alerte si un opérateur ne peut pas être ajouté
-               presentAlert(message: "Opérateur invalide")
+               presentAlert(message: " invalid Operator")
            }
     }
     @IBAction func tappedEqualButton(_ sender: UIButton) {
         guard calculator.expressionIsCorrect else {
-            presentAlert(message: "Entrez une expression correcte !")
+            presentAlert(message: "Incorrect expression !")
             return
         }
 
         guard calculator.expressionHaveEnoughElement else {
-            presentAlert(message: "Démarrez un nouveau calcul !")
+            presentAlert(message: "Start a new calc !")
             return
         }
 
         if let result = calculator.calculate() {
             textView.text.append("=\(result)")
+        } else {
+            presentAlert(message: "Calcul error.")
         }
     }
+
     func presentAlert(message: String) {
         let alertVC = UIAlertController(title: "Zéro!", message: message, preferredStyle: .alert)
         alertVC.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))

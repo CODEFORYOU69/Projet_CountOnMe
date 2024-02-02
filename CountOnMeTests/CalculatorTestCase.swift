@@ -15,28 +15,94 @@ final class CalculatorTestCase: XCTestCase {
     var calculator: Calculator!
     override func setUpWithError() throws {
             try super.setUpWithError()
-            calculator = Calculator() // Initialisation de l'instance de Calculator
+            calculator = Calculator() 
         }
 
         override func tearDownWithError() throws {
-            calculator = nil // Nettoyage de l'instance pour éviter les fuites de mémoire
+            calculator = nil
             try super.tearDownWithError()
         }
 
 
-    func test_AddingTwoNumbers_ShouldReturnSum() {
-        let calculator = Calculator()
+    // Test: Adding two numbers
+    // Given: A calculator with an expression "2 + 3"
+    // When: The calculate() method is called
+    // Then: The result should be "5"
+    func test_GivenCalculatorWithTwoPlusThree_WhenCalculateIsCalled_ShouldReturnFive() {
+        // Given
         calculator.addElement("2")
         calculator.addElement("+")
         calculator.addElement("3")
+        
+        // When
         let result = calculator.calculate()
-        XCTAssertEqual(result, "5", "Le résultat de 2 + 3 devrait être 5")
+        
+        // Then
+        XCTAssertEqual(result, "5", "The result of 2 + 3 should be 5")
     }
-    func testCalculationError() {
-        calculator.addElement("2")
+    // Test: Preventing division by zero
+    // Given: A calculator with an expression "5 / 0"
+    // When: The calculate() method is called
+    // Then: The calculation should fail or return nil
+    func test_GivenCalculatorWithFiveDividedByZero_WhenCalculateIsCalled_ShouldFailOrReturnNil() {
+        // Given
+        calculator.addElement("5")
         calculator.addElement("/")
-        calculator.addElement("0") // Division par zéro, par exemple
+        calculator.addElement("0")
+        
+        // When
         let result = calculator.calculate()
-        XCTAssertNil(result, "Le résultat devrait être nil en cas de division par zéro")
+        
+        // Then
+        XCTAssertNil(result, "Dividing by zero should return nil")
     }
+    // Test: Respecting operator precedence
+    // Given: A calculator with an expression "2 + 3 * 4"
+    // When: The calculate() method is called
+    // Then: The result should be "14"
+    func test_GivenCalculatorWithTwoPlusThreeTimesFour_WhenCalculateIsCalled_ShouldReturnFourteen() {
+        // Given
+        calculator.addElement("2")
+        calculator.addElement("+")
+        calculator.addElement("3")
+        calculator.addElement("*")
+        calculator.addElement("4")
+        
+        // When
+        let result = calculator.calculate()
+        
+        // Then
+        XCTAssertEqual(result, "14", "The result of 2 + 3 * 4 should be 14, respecting operator precedence")
+    }
+
+    // Test: Resetting the calculator
+    // Given: A calculator after performing a calculation
+    // When: The clear() method is called
+    // Then: The calculator should be reset
+    func test_GivenCalculatorAfterCalculation_WhenClearIsCalled_ShouldResetCalculator() {
+        // Given
+        calculator.addElement("2")
+        calculator.addElement("+")
+        calculator.addElement("3")
+        _ = calculator.calculate()
+        
+        
+        
+        // When
+        calculator.clear()
+        
+        // Then
+        XCTAssertTrue(calculator.elements.isEmpty, "The calculator should be reset")
+        XCTAssertNil(calculator.lastResult, "The last result should be reset")
+    }
+
+    func test_ClearingCalculator_ShouldResetItsState() {
+        calculator.addElement("2")
+        calculator.addElement("+")
+        calculator.addElement("3")
+        calculator.clear()
+        XCTAssertTrue(calculator.elements.isEmpty, "La méthode clear() devrait réinitialiser l'état de la calculatrice")
+        XCTAssertNil(calculator.lastResult, "La méthode clear() devrait réinitialiser le dernier résultat")
+    }
+
 }
