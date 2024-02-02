@@ -7,30 +7,36 @@
 //
 
 import XCTest
+@testable import CountOnMe
+
 
 final class CalculatorTestCase: XCTestCase {
-
+    
+    var calculator: Calculator!
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
-
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
-    }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+            try super.setUpWithError()
+            calculator = Calculator() // Initialisation de l'instance de Calculator
         }
-    }
 
+        override func tearDownWithError() throws {
+            calculator = nil // Nettoyage de l'instance pour éviter les fuites de mémoire
+            try super.tearDownWithError()
+        }
+
+
+    func test_AddingTwoNumbers_ShouldReturnSum() {
+        let calculator = Calculator()
+        calculator.addElement("2")
+        calculator.addElement("+")
+        calculator.addElement("3")
+        let result = calculator.calculate()
+        XCTAssertEqual(result, "5", "Le résultat de 2 + 3 devrait être 5")
+    }
+    func testCalculationError() {
+        calculator.addElement("2")
+        calculator.addElement("/")
+        calculator.addElement("0") // Division par zéro, par exemple
+        let result = calculator.calculate()
+        XCTAssertNil(result, "Le résultat devrait être nil en cas de division par zéro")
+    }
 }
