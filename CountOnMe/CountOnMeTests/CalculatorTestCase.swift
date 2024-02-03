@@ -35,11 +35,38 @@ final class CalculatorTestCase: XCTestCase {
         calculator.addElement("3")
         
         // When
-        let result = calculator.calculate()
+        let calculationResult = calculator.calculate()
         
         // Then
-        XCTAssertEqual(result, "5", "The result of 2 + 3 should be 5")
+        switch calculationResult {
+        case .success(let result):
+            XCTAssertEqual(result, "5", "The result of 2 + 3 should be 5")
+        case .failure(let error):
+            XCTFail("Calculation failed with error: \(error)")
+        }
     }
+    // Test: sub two numbers
+    // Given: A calculator with an expression "7 - 5"
+    // When: The calculate() method is called
+    // Then: The result should be "2"
+    func test_GivenCalculatorWithTwoMinusThree_WhenCalculateIsCalled_ShouldReturnTwo() {
+        // Given
+        calculator.addElement("7")
+        calculator.addElement("-")
+        calculator.addElement("5")
+        
+        // When
+        let calculationResult = calculator.calculate()
+        
+        // Then
+        switch calculationResult {
+        case .success(let result):
+            XCTAssertEqual(result, "2", "The result of 7 - 5 should be 2")
+        case .failure(let error):
+            XCTFail("Calculation failed with error: \(error)")
+        }
+    }
+
     // Test: Preventing division by zero
     // Given: A calculator with an expression "5 / 0"
     // When: The calculate() method is called
@@ -51,10 +78,15 @@ final class CalculatorTestCase: XCTestCase {
         calculator.addElement("0")
         
         // When
-        let result = calculator.calculate()
-        
-        // Then
-        XCTAssertNil(result, "Dividing by zero should return nil")
+        let calculationResult = calculator.calculate()
+            
+            // Then
+            switch calculationResult {
+            case .success(_):
+                XCTFail("The calculation should not succeed when dividing by zero.")
+            case .failure(let error):
+                XCTAssertEqual(error, Calculator.CalculatorError.divisionByZero, "Dividing by zero should result in a divisionByZero error.")
+            }
     }
     // Test: Respecting operator precedence
     // Given: A calculator with an expression "2 + 3 * 4"
@@ -69,10 +101,15 @@ final class CalculatorTestCase: XCTestCase {
         calculator.addElement("4")
         
         // When
-        let result = calculator.calculate()
+        let calculationResult = calculator.calculate()
         
         // Then
-        XCTAssertEqual(result, "14", "The result of 2 + 3 * 4 should be 14, respecting operator precedence")
+        switch calculationResult {
+        case .success(let result):
+            XCTAssertEqual(result, "14", "The result of 2 + 3 * 4 should be 14")
+        case .failure(let error):
+            XCTFail("Calculation failed with error: \(error)")
+        }
     }
 
     // Test: Resetting the calculator
@@ -104,5 +141,9 @@ final class CalculatorTestCase: XCTestCase {
         XCTAssertTrue(calculator.elements.isEmpty, "La méthode clear() devrait réinitialiser l'état de la calculatrice")
         XCTAssertNil(calculator.lastResult, "La méthode clear() devrait réinitialiser le dernier résultat")
     }
+    
+    
 
 }
+
+

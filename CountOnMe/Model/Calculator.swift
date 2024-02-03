@@ -10,16 +10,29 @@ import Foundation
 
 class Calculator {
     
+    enum CalculatorError: Error {
+        case incorrectExpression
+        case notEnoughElements
+        case divisionByZero
+        case other(String)
+    }
+    
     // Stores elements of the expression (numbers and operators)
     var elements: [String] = []
     
     // Adds a new number or operator to the expression
     func addElement(_ element: String) {
-        elements.append(element)
+        if let lastElement = elements.last, let _ = Double(lastElement), let _ = Double(element) {
+            
+            elements[elements.count - 1] = lastElement + element
+        } else {
+            elements.append(element)
+        }
     }
+    
     func clear() {
         elements.removeAll()
-        lastResult = nil 
+        lastResult = nil
     }
     func removeLastElement() {
         if !elements.isEmpty {
@@ -32,9 +45,8 @@ class Calculator {
     }
     
     
-    // Checks if the expression is correct (e.g., it does not end with an operator)
+    // Checks if the expression is correct
     var expressionIsCorrect: Bool {
-        // Modify this logic as per your requirements
         return elements.last != "+" && elements.last != "-" && elements.last != "/" && elements.last != "*"
     }
     
@@ -54,11 +66,17 @@ class Calculator {
     
     var lastResult: String?
     
+    
     // Performs the calculation and returns the result
-    func calculate() -> String? {
-        guard expressionIsCorrect, expressionHaveEnoughElement else {
-            return nil
+    func calculate() -> Result<String, CalculatorError> {
+        guard expressionIsCorrect else {
+            return .failure(.incorrectExpression)
         }
+        
+        guard expressionHaveEnoughElement else {
+            return .failure(.notEnoughElements)
+        }
+        
         
         var operationsToReduce = elements
         
@@ -69,9 +87,9 @@ class Calculator {
                 let right = Int(operationsToReduce[index + 1])!
                 
                 if operand == "/" && right == 0 {
-                    return nil
+                    return .failure(.divisionByZero)
                 }
-
+                
                 let result: Int
                 switch operand {
                 case "*": result = left * right
@@ -82,7 +100,7 @@ class Calculator {
                 operationsToReduce.replaceSubrange(index-1...index+1, with: ["\(result)"])
             }
         }
-
+        
         
         while operationsToReduce.count > 1 {
             let left = Int(operationsToReduce[0])!
@@ -100,10 +118,17 @@ class Calculator {
             operationsToReduce.insert("\(result)", at: 0)
         }
         
-        let result = operationsToReduce.first
-        lastResult = result
-        return result
+        if let result = operationsToReduce.first {
+            lastResult = result
+            return .success("\(result)")
+        } else {
+            return .failure(.other("no possible result"))
+        }
     }
+    
+}
+
+extension Calculator.CalculatorError: Equatable {
     
 }
 
