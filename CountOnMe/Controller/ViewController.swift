@@ -44,11 +44,18 @@ class ViewController: UIViewController {
     }
     
     @IBAction func tappedCButton(_ sender: UIButton) {
-        guard !calculator.elements.isEmpty else { return }
-        
-        calculator.removeLastElement()
-        textView.text = calculator.currentExpression
+        guard !textView.text.isEmpty else { return }
+
+        textView.text.removeLast()
+
+        updateCalculatorElementsFromTextView()
     }
+
+    func updateCalculatorElementsFromTextView() {
+       
+        calculator.elements = textView.text.split(separator: " ").map(String.init)
+    }
+
     var elements: [String] {
         return textView.text.split(separator: " ").map { "\($0)" }
     }
@@ -70,7 +77,7 @@ class ViewController: UIViewController {
             return
         }
         
-       
+        
         if isResultDisplayed {
             textView.text = ""
             resultView.text = ""
@@ -107,27 +114,30 @@ class ViewController: UIViewController {
         acButtonPressCount = 0
         
         if isResultDisplayed {
-            
             if let lastResult = self.lastResult {
-                textView.text = "\(lastResult) -"
+                textView.text = "\(lastResult)"
                 calculator.clear()
                 calculator.addElement(lastResult)
                 isResultDisplayed = false
             }
+            textView.text.append("-")
             calculator.addElement("-")
-        } else if calculator.canAddOperator {
-
-            calculator.addElement("-")
-            textView.text.append(" -")
         } else {
+            if elements.isEmpty || Double(elements.last!) != nil {
+                textView.text.append("-")
+                calculator.addElement("-")
+            }
 
-            presentAlert(message: "Un opérateur est déjà utilisé. Démarrez un nouveau calcul !")
+            else if ["+", "*", "/"].contains(elements.last!) || (elements.count >= 2 && elements[elements.count - 2] != "-" && elements.last! == "-") {
+                textView.text.append(" -")
+                calculator.addElement("-")
+            }
+ 
+            else {
+                presentAlert(message: "can't add a new operator!")
+            }
         }
     }
-    
-    
-    
-    
     @IBAction func tappedDivideButton(_ sender: UIButton) {
         acButtonPressCount = 0
         
@@ -143,11 +153,9 @@ class ViewController: UIViewController {
             textView.text.append(" / ")
             calculator.addElement("/")
         } else {
-            presentAlert(message: "Un opérateur est déjà utilisé. Démarrez un nouveau calcul !")
+            presentAlert(message: "can't add a new operator!")
         }
     }
-    
-    
     @IBAction func tappedMultiButton(_ sender: UIButton) {
         acButtonPressCount = 0
         
@@ -158,14 +166,15 @@ class ViewController: UIViewController {
                 calculator.addElement(lastResult)
                 isResultDisplayed = false
             }
-            calculator.addElement("*")
+            calculator.addElement("*") // Assurez-vous d'ajouter cette ligne ici
         } else if calculator.canAddOperator {
             textView.text.append(" * ")
             calculator.addElement("*")
         } else {
-            presentAlert(message: "Un opérateur est déjà utilisé. Démarrez un nouveau calcul !")
+            presentAlert(message: "can't add a new operator!")
         }
     }
+
     
     @IBAction func tappedEqualButton(_ sender: UIButton) {
         acButtonPressCount = 0
@@ -174,9 +183,7 @@ class ViewController: UIViewController {
         
         switch calculationResult {
         case .success(let result):
-            let expressionForHistory = calculator.currentExpression + " = " + result
             
-            // Add calcul and result to history
             addCalculationToHistory(expression: calculator.currentExpression, result: result)
             
             
@@ -194,6 +201,7 @@ class ViewController: UIViewController {
                 message = "Can't divide by zero"
             case .other(let errorMessage):
                 message = errorMessage
+            
             }
             presentAlert(message: message)
             isResultDisplayed = false
@@ -213,7 +221,6 @@ class ViewController: UIViewController {
         let newEntry = CalculationHistoryEntry(expression: expression, result: result)
         calculationHistory.append(newEntry)
         
-        // store 5 recent result
         if calculationHistory.count > 5 {
             calculationHistory.removeFirst()
         }

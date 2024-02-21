@@ -17,23 +17,68 @@ class Calculator {
         case other(String)
     }
     
-    // Stores elements of the expression (numbers and operators)
     var elements: [String] = []
     
-    // Adds a new number or operator to the expression
     func addElement(_ element: String) {
-        if let lastElement = elements.last, let _ = Double(lastElement), let _ = Double(element) {
-            
-            elements[elements.count - 1] = lastElement + element
+        // Vérifie si "-" est utilisé dans le contexte d'un nombre négatif ou comme opérateur
+        if element == "-" {
+            if canAddNegativeNumberIndicator() {
+                // Gère le "-" comme l'indicateur d'un nombre négatif
+                handleNegativeNumberIndicator()
+            } else if canAddSub() {
+                // Ajoute "-" comme un opérateur de soustraction
+                elements.append(element)
+            }
+        } else if ["+", "*", "/"].contains(element) {
+            if canAddSub() {
+                elements.append(element)
+            }
+        } else if let number = Double(element) {
+            handleNumber(element, number: number)
+        }
+    }
+
+    func canAddSub() -> Bool {
+        // Un opérateur peut être ajouté si le dernier élément n'est pas un opérateur
+        // ou si le dernier élément est "-" et qu'il y a des éléments précédents qui permettent un opérateur
+        if let lastElement = elements.last {
+            return !isOperator(lastElement) || (lastElement == "-" && elements.count > 1)
+        }
+        return true
+    }
+
+    func canAddNegativeNumberIndicator() -> Bool {
+        // "-" peut être ajouté comme indicateur de nombre négatif si c'est le premier élément
+        // ou si le dernier élément est un opérateur (sauf si le dernier est déjà un "-")
+        return elements.isEmpty || (isOperator(elements.last!) && elements.last != "-")
+    }
+
+    func handleNegativeNumberIndicator() {
+        // Ajoute "-" en tant qu'indicateur de nombre négatif
+        elements.append("-")
+    }
+
+    func handleNumber(_ element: String, number: Double) {
+        // Si le dernier élément est "-", combine le "-" avec le nombre pour former un nombre négatif
+        if let lastElement = elements.last, lastElement == "-" {
+            elements[elements.count - 1] += element
         } else {
             elements.append(element)
         }
     }
+
+    func isOperator(_ element: String) -> Bool {
+        return ["+", "-", "*", "/"].contains(element)
+    }
+
+
+
     
     func clear() {
         elements.removeAll()
         lastResult = nil
     }
+    
     func removeLastElement() {
         if !elements.isEmpty {
             elements.removeLast()
@@ -44,20 +89,12 @@ class Calculator {
         return elements.joined(separator: " ")
     }
     
-    
-    // Checks if the expression is correct
-    var expressionIsCorrect: Bool {
-        return elements.last != "+" && elements.last != "-" && elements.last != "/" && elements.last != "*"
-    }
-    
-    // Checks if the expression has enough elements for a valid calculation
     var expressionHaveEnoughElement: Bool {
         return elements.count >= 3
     }
     
-    // Checks if an operator can be added to the expression
     var canAddOperator: Bool {
-        return elements.last != "+" && elements.last != "-" && elements.last != "/" && elements.last != "*"
+        return !(elements.last == "+" || elements.last == "-" || elements.last == "/" || elements.last == "*" )
     }
     
     var expressionHaveResult: Bool {
@@ -66,69 +103,68 @@ class Calculator {
     
     var lastResult: String?
     
-    
-    // Performs the calculation and returns the result
     func calculate() -> Result<String, CalculatorError> {
-        guard expressionIsCorrect else {
-            return .failure(.incorrectExpression)
-        }
+
+        
         
         guard expressionHaveEnoughElement else {
+            print("Not enough elements")
+
             return .failure(.notEnoughElements)
         }
         
-        
         var operationsToReduce = elements
         
-        while operationsToReduce.contains("*") || operationsToReduce.contains("/") {
-            if let index = operationsToReduce.firstIndex(where: { $0 == "*" || $0 == "/" }) {
-                let left = Int(operationsToReduce[index - 1])!
-                let operand = operationsToReduce[index]
-                let right = Int(operationsToReduce[index + 1])!
-                
-                if operand == "/" && right == 0 {
+        while let index = operationsToReduce.firstIndex(where: { $0 == "*" || $0 == "/" }) {
+            let operand = operationsToReduce[index]
+            guard let left = Double(operationsToReduce[index - 1]),
+                  let right = Double(operationsToReduce[index + 1]) else {
+                return .failure(.incorrectExpression)
+            }
+            
+            let result: Double
+            switch operand {
+            case "*":
+                result = left * right
+            case "/":
+                if right == 0 {
                     return .failure(.divisionByZero)
                 }
-                
-                let result: Int
-                switch operand {
-                case "*": result = left * right
-                case "/": result = left / right
-                default: fatalError("Unknown operator!")
-                }
-                
-                operationsToReduce.replaceSubrange(index-1...index+1, with: ["\(result)"])
+                result = left / right
+            default:
+                return .failure(.other("Opérateur inconnu"))
             }
+            
+            operationsToReduce.replaceSubrange(index-1...index+1, with: [String(result)])
         }
         
-        
         while operationsToReduce.count > 1 {
-            let left = Int(operationsToReduce[0])!
+            guard let left = Double(operationsToReduce[0]),
+                  let right = Double(operationsToReduce[2]) else {
+                return .failure(.incorrectExpression)
+            }
             let operand = operationsToReduce[1]
-            let right = Int(operationsToReduce[2])!
             
-            let result: Int
+            let result: Double
             switch operand {
-            case "+": result = left + right
-            case "-": result = left - right
-            default: fatalError("Unknown operator!")
+            case "+":
+                result = left + right
+            case "-":
+                result = left - right
+            default:
+                return .failure(.other("Opérateur inconnu"))
             }
             
             operationsToReduce = Array(operationsToReduce.dropFirst(3))
-            operationsToReduce.insert("\(result)", at: 0)
+            operationsToReduce.insert(String(result), at: 0)
         }
         
         if let result = operationsToReduce.first {
             lastResult = result
-            return .success("\(result)")
+            return .success(result)
         } else {
-            return .failure(.other("no possible result"))
+            return .failure(.other("Aucun résultat calculable"))
         }
     }
-    
 }
-
-extension Calculator.CalculatorError: Equatable {
-    
-}
-
+extension Calculator.CalculatorError: Equatable {}
