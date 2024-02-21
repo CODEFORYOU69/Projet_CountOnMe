@@ -201,7 +201,7 @@ class ViewController: UIViewController {
                 message = "Can't divide by zero"
             case .other(let errorMessage):
                 message = errorMessage
-            
+        
             }
             presentAlert(message: message)
             isResultDisplayed = false

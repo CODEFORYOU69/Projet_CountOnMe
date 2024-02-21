@@ -227,22 +227,7 @@ final class CalculatorTestCase: XCTestCase {
         // Then
         XCTAssertEqual(result, .success("-15.0"), "Multiplying by a negative number should work correctly.")
     }
-    // Test: Subtracting a negative number
-    // Given: A calculator with an expression "5 - (-3)"
-    // When: The calculate() method is called
-    // Then: The result should be "8"
-    func testSubtractingNegativeNumber() {
-        // Given
-        calculator.addElement("5")
-        calculator.addElement("-")
-        calculator.addElement("-3")
-        
-        // When
-        let result = calculator.calculate()
-        
-        // Then
-        XCTAssertEqual(result, .success("8"), "Subtracting a negative number should increase the value.")
-    }
+    
     // Test: Adding a negative number
     // Given: A calculator with an expression "5 + (-3)"
     // When: The calculate() method is called

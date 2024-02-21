@@ -20,58 +20,29 @@ class Calculator {
     var elements: [String] = []
     
     func addElement(_ element: String) {
-        // Vérifie si "-" est utilisé dans le contexte d'un nombre négatif ou comme opérateur
-        if element == "-" {
-            if canAddNegativeNumberIndicator() {
-                // Gère le "-" comme l'indicateur d'un nombre négatif
-                handleNegativeNumberIndicator()
-            } else if canAddSub() {
-                // Ajoute "-" comme un opérateur de soustraction
-                elements.append(element)
-            }
-        } else if ["+", "*", "/"].contains(element) {
-            if canAddSub() {
-                elements.append(element)
-            }
-        } else if let number = Double(element) {
-            handleNumber(element, number: number)
-        }
-    }
 
-    func canAddSub() -> Bool {
-        // Un opérateur peut être ajouté si le dernier élément n'est pas un opérateur
-        // ou si le dernier élément est "-" et qu'il y a des éléments précédents qui permettent un opérateur
-        if let lastElement = elements.last {
-            return !isOperator(lastElement) || (lastElement == "-" && elements.count > 1)
-        }
-        return true
-    }
-
-    func canAddNegativeNumberIndicator() -> Bool {
-        // "-" peut être ajouté comme indicateur de nombre négatif si c'est le premier élément
-        // ou si le dernier élément est un opérateur (sauf si le dernier est déjà un "-")
-        return elements.isEmpty || (isOperator(elements.last!) && elements.last != "-")
-    }
-
-    func handleNegativeNumberIndicator() {
-        // Ajoute "-" en tant qu'indicateur de nombre négatif
-        elements.append("-")
-    }
-
-    func handleNumber(_ element: String, number: Double) {
-        // Si le dernier élément est "-", combine le "-" avec le nombre pour former un nombre négatif
-        if let lastElement = elements.last, lastElement == "-" {
-            elements[elements.count - 1] += element
-        } else {
+        if ["+", "*", "/"].contains(element) || (element == "-" && !(elements.last == "-" && elements.count > 1 && Double(elements[elements.count - 2]) == nil)) {
             elements.append(element)
         }
+        else if element == "-" {
+
+            if elements.isEmpty || ["+", "*", "/"].contains(elements.last!) || elements.last == "-" {
+                elements.append(element)
+            }
+        }
+        else if let _ = Double(element) {
+            if let lastElement = elements.last, lastElement == "-" && !(elements.count > 1 && Double(elements[elements.count - 2]) != nil) {
+                elements[elements.count - 1] += element
+            }
+            else {
+                if let lastElement = elements.last, let lastNumber = Double(lastElement), let newElement = Double(element) {
+                    elements[elements.count - 1] = String(lastNumber * 10 + newElement * (lastElement.starts(with: "-") ? -1 : 1))
+                } else {
+                    elements.append(element)
+                }
+            }
+        }
     }
-
-    func isOperator(_ element: String) -> Bool {
-        return ["+", "-", "*", "/"].contains(element)
-    }
-
-
 
     
     func clear() {
@@ -89,12 +60,14 @@ class Calculator {
         return elements.joined(separator: " ")
     }
     
+  
+    
     var expressionHaveEnoughElement: Bool {
         return elements.count >= 3
     }
     
     var canAddOperator: Bool {
-        return !(elements.last == "+" || elements.last == "-" || elements.last == "/" || elements.last == "*" )
+        return !(elements.last == "+" || elements.last == "-" || elements.last == "/" || elements.last == "*")
     }
     
     var expressionHaveResult: Bool {
@@ -104,8 +77,8 @@ class Calculator {
     var lastResult: String?
     
     func calculate() -> Result<String, CalculatorError> {
+        print("Calculating with elements: \(elements)")
 
-        
         
         guard expressionHaveEnoughElement else {
             print("Not enough elements")
@@ -152,7 +125,7 @@ class Calculator {
             case "-":
                 result = left - right
             default:
-                return .failure(.other("Opérateur inconnu"))
+                return .failure(.other("No Calculable result"))
             }
             
             operationsToReduce = Array(operationsToReduce.dropFirst(3))
@@ -163,7 +136,7 @@ class Calculator {
             lastResult = result
             return .success(result)
         } else {
-            return .failure(.other("Aucun résultat calculable"))
+            return .failure(.other("No Calculable result"))
         }
     }
 }
