@@ -11,7 +11,6 @@ import Foundation
 class Calculator {
     
     enum CalculatorError: Error {
-        case incorrectExpression
         case notEnoughElements
         case divisionByZero
         case other(String)
@@ -89,7 +88,7 @@ class Calculator {
             let operand = operationsToReduce[index]
             guard let left = Double(operationsToReduce[index - 1]),
                   let right = Double(operationsToReduce[index + 1]) else {
-                return .failure(.incorrectExpression)
+                return .failure(.notEnoughElements)
             }
             
             let result: Double
@@ -111,7 +110,7 @@ class Calculator {
         while operationsToReduce.count > 1 {
             guard let left = Double(operationsToReduce[0]),
                   let right = Double(operationsToReduce[2]) else {
-                return .failure(.incorrectExpression)
+                return .failure(.notEnoughElements)
             }
             let operand = operationsToReduce[1]
             

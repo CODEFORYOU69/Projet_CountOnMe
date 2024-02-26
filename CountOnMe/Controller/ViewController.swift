@@ -128,8 +128,6 @@ class ViewController: UIViewController {
         case .failure(let error):
             let message: String
             switch error {
-            case .incorrectExpression:
-                message = "Incorrect expression !"
             case .notEnoughElements:
                 message = "not enough elements !"
             case .divisionByZero:

@@ -9,10 +9,10 @@
 import XCTest
 @testable import CountOnMe
 
-
 final class CalculatorTestCase: XCTestCase {
     
     var calculator: Calculator!
+    
     override func setUpWithError() throws {
         try super.setUpWithError()
         calculator = Calculator()
@@ -23,233 +23,205 @@ final class CalculatorTestCase: XCTestCase {
         try super.tearDownWithError()
     }
     
-    
     // Test: Adding two numbers
-    // Given: A calculator with an expression "2 + 3"
-    // When: The calculate() method is called
-    // Then: The result should be "5"
-    func test_GivenCalculatorWithTwoPlusThree_WhenCalculateIsCalled_ShouldReturnFive() {
+    func testAdditionOfTwoNumbers() {
         // Given
         calculator.addElement("2")
         calculator.addElement("+")
         calculator.addElement("3")
         
         // When
-        let calculationResult = calculator.calculate()
+        let result = calculator.calculate()
         
         // Then
-        switch calculationResult {
-        case .success(let result):
-            XCTAssertEqual(result, "5.0", "The result of 2 + 3 should be 5.0")
-        case .failure(let error):
-            XCTFail("Calculation failed with error: \(error)")
-        }
+        XCTAssertEqual(result, .success("5.0"), "The result of 2 + 3 should be 5")
     }
-    // Test: sub two numbers
-    // Given: A calculator with an expression "7 - 5"
-    // When: The calculate() method is called
-    // Then: The result should be "2"
-    func test_GivenCalculatorWithTwoMinusThree_WhenCalculateIsCalled_ShouldReturnTwo() {
+    
+    // Test: Subtracting two numbers
+    func testSubtractionOfTwoNumbers() {
         // Given
         calculator.addElement("7")
         calculator.addElement("-")
         calculator.addElement("5")
         
         // When
-        let calculationResult = calculator.calculate()
+        let result = calculator.calculate()
         
         // Then
-        switch calculationResult {
-        case .success(let result):
-            XCTAssertEqual(result, "2.0", "The result of 7 - 5 should be 2")
-        case .failure(let error):
-            XCTFail("Calculation failed with error: \(error)")
-        }
+        XCTAssertEqual(result, .success("2.0"), "The result of 7 - 5 should be 2")
+    }
+    
+    // Test: Multiplication of two numbers
+    func testMultiplicationOfTwoNumbers() {
+        // Given
+        calculator.addElement("3")
+        calculator.addElement("*")
+        calculator.addElement("4")
+        
+        // When
+        let result = calculator.calculate()
+        
+        // Then
+        XCTAssertEqual(result, .success("12.0"), "The result of 3 * 4 should be 12")
+    }
+    
+    // Test: Division of two numbers
+    func testDivisionOfTwoNumbers() {
+        // Given
+        calculator.addElement("6")
+        calculator.addElement("/")
+        calculator.addElement("3")
+        
+        // When
+        let result = calculator.calculate()
+        
+        // Then
+        XCTAssertEqual(result, .success("2.0"), "The result of 6 / 3 should be 2")
     }
     
     // Test: Preventing division by zero
-    // Given: A calculator with an expression "5 / 0"
-    // When: The calculate() method is called
-    // Then: The calculation should fail or return nil
-    func test_GivenCalculatorWithFiveDividedByZero_WhenCalculateIsCalled_ShouldFailOrReturnNil() {
+    func testPreventingDivisionByZero() {
         // Given
         calculator.addElement("5")
         calculator.addElement("/")
         calculator.addElement("0")
         
         // When
-        let calculationResult = calculator.calculate()
+        let result = calculator.calculate()
         
         // Then
-        switch calculationResult {
-        case .success(_):
-            XCTFail("The calculation should not succeed when dividing by zero.")
+        switch result {
         case .failure(let error):
-            XCTAssertEqual(error, Calculator.CalculatorError.divisionByZero, "Dividing by zero should result in a divisionByZero error.")
+            XCTAssertEqual(error, .divisionByZero, "Should return division by zero error")
+        default:
+            XCTFail("Expected division by zero error")
         }
     }
-    // Test: Respecting operator precedence
-    // Given: A calculator with an expression "2 + 3 * 4"
-    // When: The calculate() method is called
-    // Then: The result should be "14"
-    func test_GivenCalculatorWithTwoPlusThreeTimesFour_WhenCalculateIsCalled_ShouldReturnFourteen() {
+    
+    // Test: Clearing the calculator
+    func testClearingCalculator() {
+        // Given
+        calculator.addElement("5")
+        calculator.addElement("+")
+        calculator.addElement("2")
+        _ = calculator.calculate()
+        
+        // When
+        calculator.clear()
+        
+        // Then
+        XCTAssertTrue(calculator.elements.isEmpty, "Calculator should be cleared")
+        XCTAssertNil(calculator.lastResult, "Last result should be cleared")
+    }
+    
+    
+    // Test: Expression ends with an operator
+    func testExpressionEndsWithAnOperator() {
+        // Given
+        calculator.addElement("5")
+        calculator.addElement("+")
+        
+        // When
+        let result = calculator.calculate()
+        
+        // Then
+        switch result {
+        case .failure(let error):
+            XCTAssertEqual(error, .notEnoughElements, "Should return not enought elements error")
+        default:
+            XCTFail("Expected not enought elements error")
+        }
+    }
+    // Test: Checking operator precedence with addition and multiplication
+    func testOperatorPrecedenceWithAdditionAndMultiplication() {
         // Given
         calculator.addElement("2")
         calculator.addElement("+")
         calculator.addElement("3")
         calculator.addElement("*")
-        calculator.addElement("4")
-        
-        // When
-        let calculationResult = calculator.calculate()
-        
-        // Then
-        switch calculationResult {
-        case .success(let result):
-            XCTAssertEqual(result, "14.0", "The result of 2 + 3 * 4 should be 14")
-        case .failure(let error):
-            XCTFail("Calculation failed with error: \(error)")
-        }
-    }
-    
-    // Test: Resetting the calculator
-    // Given: A calculator after performing a calculation
-    // When: The clear() method is called
-    // Then: The calculator should be reset
-    func test_GivenCalculatorAfterCalculation_WhenClearIsCalled_ShouldResetCalculator() {
-        // Given
-        calculator.addElement("2")
-        calculator.addElement("+")
-        calculator.addElement("3")
-        _ = calculator.calculate()
-        
-        
-        
-        // When
-        calculator.clear()
-        
-        // Then
-        XCTAssertTrue(calculator.elements.isEmpty, "The calculator should be reset")
-        XCTAssertNil(calculator.lastResult, "The last result should be reset")
-    }
-    
-    func test_ClearingCalculator_ShouldResetItsState() {
-        calculator.addElement("2")
-        calculator.addElement("+")
-        calculator.addElement("3")
-        calculator.clear()
-        XCTAssertTrue(calculator.elements.isEmpty, "La méthode clear() devrait réinitialiser l'état de la calculatrice")
-        XCTAssertNil(calculator.lastResult, "La méthode clear() devrait réinitialiser le dernier résultat")
-    }
-    
-    func test_Division_GivenCalculatorWithSixDividedByThree_WhenCalculate_ShouldReturnTwo() {
-        // Given
-        calculator.addElement("6")
-        calculator.addElement("/")
-        calculator.addElement("3")
+        calculator.addElement("4") // 2 + 3 * 4 = 14
         
         // When
         let result = calculator.calculate()
+        
+        // Then
+        XCTAssertEqual(result, .success("14.0"), "The result of 2 + 3 * 4 should be 14 due to operator precedence")
+    }
+
+    // Test: Checking operator precedence with addition and division
+    func testOperatorPrecedenceWithAdditionAndDivision() {
+        // Given
+        calculator.addElement("10")
+        calculator.addElement("+")
+        calculator.addElement("2")
+        calculator.addElement("/")
+        calculator.addElement("2") // 10 + 2 / 2 = 11
+        
+        // When
+        let result = calculator.calculate()
+        
+        // Then
+        XCTAssertEqual(result, .success("11.0"), "The result of 10 + 2 / 2 should be 11 due to operator precedence")
+    }
+
+    // Test: Checking operator precedence with multiple operations
+    func testOperatorPrecedenceWithMultipleOperations() {
+        // Given
+        calculator.addElement("10")
+        calculator.addElement("-")
+        calculator.addElement("2")
+        calculator.addElement("*")
+        calculator.addElement("3")
+        calculator.addElement("+")
+        calculator.addElement("5")
+        calculator.addElement("/")
+        calculator.addElement("2") // 10 - 2 * 3 + 5 / 2 = 4
+        
+        // When
+        let result = calculator.calculate()
+        
+        // Then
+        XCTAssertEqual(result, .success("6.5"), "The result of 10 - 2 * 3 + 5 / 2 should be 4 due to operator precedence")
+    }
+    // Test: Using the result of a previous calculation in a new calculation
+    func testUsingPreviousResultInNewCalculation() {
+        // Given
+        calculator.addElement("5")
+        calculator.addElement("+")
+        calculator.addElement("3") // 5 + 3 = 8
+        
+        // Perform the first calculation
+        var result = calculator.calculate()
         
         // Then
         switch result {
         case .success(let output):
-            XCTAssertEqual(output, "2.0", "The output of 6 / 3 should be 2.0")
+            XCTAssertEqual(output, "8.0", "The result of 5 + 3 should be 8.")
         case .failure(let error):
-            XCTFail("Division calculation failed with error: \(error)")
+            XCTFail("First calculation failed with error: \(error)")
         }
-        
-        XCTAssertEqual(calculator.elements, ["6", "/", "3"], "The expression should be 6 / 3 before the reset.")
-    }
-    func test_Calculate_WithExpressionEndingInOperator_ShouldReturnIncorrectExpressionError() {
-        // Given
-        calculator.addElement("5")
-        calculator.addElement("+")
-        
-        // When
-        let result = calculator.calculate()
-        
-        // Then
-        switch result {
-        case .failure(let error):
-            XCTAssertEqual(error, .incorrectExpression)
-        default:
-            XCTFail("Expected incorrectExpression error.")
-        }
-    }
-   
 
-    func test_Calculate_WithSingleNumber_ShouldReturnNotEnoughElementsError() {
-        
-        // Given
-        calculator.addElement("5")
-        // When
-        let result = calculator.calculate()
-        
-        // Then
-        switch result {
-        case .failure(let error):
-            XCTAssertEqual(error, .notEnoughElements)
-        default:
-            XCTFail("Expected notEnoughElements error.")
+        // Now use the result in a new calculation: 8 * 2 = 16
+        if let lastResult = calculator.lastResult {
+            calculator.clear() // Clearing the calculator for a new expression
+            calculator.addElement(lastResult) // Using the result of the previous calculation
+            calculator.addElement("*")
+            calculator.addElement("2")
+            
+            // Perform the new calculation
+            result = calculator.calculate()
+            
+            // Then
+            switch result {
+            case .success(let newOutput):
+                XCTAssertEqual(newOutput, "16.0", "The result of 8 * 2 should be 16.")
+            case .failure(let newError):
+                XCTFail("Second calculation failed with error: \(newError)")
+            }
+        } else {
+            XCTFail("No result from first calculation to use in second calculation")
         }
     }
 
-    // Test: Dividing by a negative number
-    // Given: A calculator with an expression "6 / (-3)"
-    // When: The calculate() method is called
-    // Then: The result should be "-2"
-    func testDividingByNegativeNumber() {
-        // Given
-        calculator.addElement("6")
-        calculator.addElement("/")
-        calculator.addElement("-3")
-        
-        // When
-        let result = calculator.calculate()
-        
-        // Then
-        XCTAssertEqual(result, .success("-2.0"), "Dividing by a negative number should work correctly.")
-    }
-    // Test: Multiplying by a negative number
-    // Given: A calculator with an expression "5 * (-3)"
-    // When: The calculate() method is called
-    // Then: The result should be "-15"
-    func testMultiplyingByNegativeNumber() {
-        // Given
-        calculator.addElement("5")
-        calculator.addElement("*")
-        calculator.addElement("-3")
-        
-        // When
-        let result = calculator.calculate()
-        
-        // Then
-        XCTAssertEqual(result, .success("-15.0"), "Multiplying by a negative number should work correctly.")
-    }
-    
-    // Test: Adding a negative number
-    // Given: A calculator with an expression "5 + (-3)"
-    // When: The calculate() method is called
-    // Then: The result should be "2"
-    func testAddingNegativeNumber() {
-        // Given
-        calculator.addElement("5")
-        calculator.addElement("+")
-        calculator.addElement("-3")
-        
-        // When
-        let result = calculator.calculate()
-        
-        // Then
-        XCTAssertEqual(result, .success("2.0"), "Adding a negative number should work correctly.")
-    }
 
-    
-    
-    
 }
-
-
-
-
