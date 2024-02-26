@@ -20,29 +20,26 @@ class Calculator {
     var elements: [String] = []
     
     func addElement(_ element: String) {
-
-        if ["+", "*", "/"].contains(element) || (element == "-" && !(elements.last == "-" && elements.count > 1 && Double(elements[elements.count - 2]) == nil)) {
+        if isOperator(element) {
             elements.append(element)
         }
-        else if element == "-" {
+        else if Double(element) != nil {
+            if var lastElement = elements.last {
+               
+                lastElement += "\(element)"
+                elements[elements.count - 1] = lastElement
+            } else {
 
-            if elements.isEmpty || ["+", "*", "/"].contains(elements.last!) || elements.last == "-" {
                 elements.append(element)
             }
         }
-        else if let _ = Double(element) {
-            if let lastElement = elements.last, lastElement == "-" && !(elements.count > 1 && Double(elements[elements.count - 2]) != nil) {
-                elements[elements.count - 1] += element
-            }
-            else {
-                if let lastElement = elements.last, let lastNumber = Double(lastElement), let newElement = Double(element) {
-                    elements[elements.count - 1] = String(lastNumber * 10 + newElement * (lastElement.starts(with: "-") ? -1 : 1))
-                } else {
-                    elements.append(element)
-                }
-            }
-        }
     }
+
+
+    func isOperator(_ element: String) -> Bool {
+        return ["+", "-", "*", "/"].contains(element)
+    }
+
 
     
     func clear() {
