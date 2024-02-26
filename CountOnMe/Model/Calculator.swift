@@ -23,8 +23,8 @@ class Calculator {
         if isOperator(element) {
             elements.append(element)
         }
-        else if Double(element) != nil {
-            if var lastElement = elements.last {
+        else if let number = Double(element) {
+            if var lastElement = elements.last, let lastNumber = Double(lastElement) {
                
                 lastElement += "\(element)"
                 elements[elements.count - 1] = lastElement
