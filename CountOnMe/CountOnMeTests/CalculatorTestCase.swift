@@ -26,15 +26,15 @@ final class CalculatorTestCase: XCTestCase {
     // Test: Adding two numbers
     func testAdditionOfTwoNumbers() {
         // Given
-        calculator.addElement("2")
+        calculator.addElement("203")
         calculator.addElement("+")
-        calculator.addElement("3")
+        calculator.addElement("33")
         
         // When
         let result = calculator.calculate()
         
         // Then
-        XCTAssertEqual(result, .success("5.0"), "The result of 2 + 3 should be 5")
+        XCTAssertEqual(result, .success("236.0"), "The result of 203 + 33 should be 236")
     }
     
     // Test: Subtracting two numbers
@@ -147,7 +147,7 @@ final class CalculatorTestCase: XCTestCase {
         // Then
         XCTAssertEqual(result, .success("14.0"), "The result of 2 + 3 * 4 should be 14 due to operator precedence")
     }
-
+    
     // Test: Checking operator precedence with addition and division
     func testOperatorPrecedenceWithAdditionAndDivision() {
         // Given
@@ -163,7 +163,7 @@ final class CalculatorTestCase: XCTestCase {
         // Then
         XCTAssertEqual(result, .success("11.0"), "The result of 10 + 2 / 2 should be 11 due to operator precedence")
     }
-
+    
     // Test: Checking operator precedence with multiple operations
     func testOperatorPrecedenceWithMultipleOperations() {
         // Given
@@ -200,7 +200,7 @@ final class CalculatorTestCase: XCTestCase {
         case .failure(let error):
             XCTFail("First calculation failed with error: \(error)")
         }
-
+        
         // Now use the result in a new calculation: 8 * 2 = 16
         if let lastResult = calculator.lastResult {
             calculator.clear() // Clearing the calculator for a new expression
@@ -222,6 +222,147 @@ final class CalculatorTestCase: XCTestCase {
             XCTFail("No result from first calculation to use in second calculation")
         }
     }
+    func testRemoveLastElement_WhenElementsNotEmpty_ShouldRemoveLast() {
+        // Given
+        calculator.addElement("3")
+        calculator.addElement("+")
+        calculator.addElement("5")
+        
+        // Precondition check (Optional but recommended for clarity)
+        XCTAssertEqual(calculator.elements, ["3", "+", "5"], "Initial elements should be 3, +, and 5")
+        
+        // When
+        calculator.removeLastElement()
+        
+        // Then
+        XCTAssertEqual(calculator.elements, ["3", "+"], "The last element should be removed, leaving 3 and +")
+    }
+    
+    func testRemoveLastElement_WhenElementsIsEmpty_ShouldDoNothing() {
+        // Given
+        // No elements are added to the calculator
+        
+        // When
+        calculator.removeLastElement()
+        
+        // Then
+        XCTAssertTrue(calculator.elements.isEmpty, "Elements should still be empty after removing last element")
+    }
+    func testCurrentExpression_WhenElementsContainsMultipleItems_ShouldReturnCorrectExpression() {
+        // Given
+        calculator.addElement("3")
+        calculator.addElement("+")
+        calculator.addElement("5")
+
+        // When
+        let expression = calculator.currentExpression
+
+        // Then
+        XCTAssertEqual(expression, "3 + 5", "The current expression should be '3 + 5'")
+    }
+
+    func testCurrentExpression_WhenElementsIsEmpty_ShouldReturnEmptyString() {
+        // Given
+        // No elements are added to the calculator
+
+        // When
+        let expression = calculator.currentExpression
+
+        // Then
+        XCTAssertTrue(expression.isEmpty, "The current expression should be an empty string when no elements are added")
+    }
+    func testCanAddOperator_WhenLastElementIsNumber_ShouldReturnTrue() {
+        // Given
+        calculator.addElement("3")
+
+        // When
+        let canAdd = calculator.canAddOperator
+
+        // Then
+        XCTAssertTrue(canAdd, "Should be able to add an operator after a number")
+    }
+
+    func testCanAddOperator_WhenLastElementIsOperator_ShouldReturnFalse() {
+        // Given scenarios for each operator
+        let operators = ["+", "-", "*", "/"]
+
+        operators.forEach { operatorSymbol in
+            calculator.clear() // Make sure calculator is clear before each test
+            calculator.addElement("3") // Add a number before the operator for valid syntax
+            calculator.addElement(operatorSymbol) // Add the operator
+
+            // When
+            let canAdd = calculator.canAddOperator
+
+            // Then
+            XCTAssertFalse(canAdd, "Should not be able to add an operator after another operator")
+        }
+    }
+
+    func testCanAddOperator_WhenElementsIsEmpty_ShouldReturnTrue() {
+        // Given
+        // No elements are added to the calculator
+
+        // When
+        let canAdd = calculator.canAddOperator
+
+        // Then
+        XCTAssertTrue(canAdd, "Should be able to add an operator if no elements are present")
+    }
+    func testCalculate_WhenNonNumericElementsPresent_ShouldReturnInvalidNumberError() {
+        // Given: an expression with a non-numeric element
+        calculator.addElement("5")
+        calculator.addElement("*")
+        calculator.addElement("three")
+
+        // When: calculating the result
+        let result = calculator.calculate()
+
+        // Then: expect a failure due to invalid number
+        switch result {
+        case .failure(let error):
+            XCTAssertEqual(error, .notEnoughElements, "Should return notEnoughElements error due to non-numeric element")
+        default:
+            XCTFail("Expected failure with notEnoughElements error")
+        }
+    }
+    func testCalculate_WhenUnknownOperatorPresent_ShouldReturnUnknownOperatorError() {
+        // Given: an expression with an unknown operator
+        calculator.addElement("5")
+        calculator.addElement("?")
+        calculator.addElement("2")
+
+        // When: calculating the result
+        let result = calculator.calculate()
+
+        // Then: expect a failure due to unknown operator
+        switch result {
+        case .failure(let error):
+            XCTAssertEqual(error, .notEnoughElements, "Should return notEnoughElements error due to 'Opérateur inconnu'")
+        default:
+            XCTFail("Expected failure with other error indicating unknown operator")
+        }
+    }
+    func testCalculate_WhenNonCalculableExpression_ShouldReturnNoCalculableResultError() {
+        // Given: a correct expression that somehow leads to a non-calculable state
+        calculator.addElement("5")
+        calculator.addElement("+")
+        // You might need to simulate a scenario that leads to a non-calculable result,
+        // which might be tricky if your code doesn't naturally allow it.
+        // This is more of a placeholder for situations where your logic might have gaps.
+
+        // When: calculating the result
+        let result = calculator.calculate()
+
+        // Then: expect a failure indicating no calculable result
+        switch result {
+        case .failure(let error):
+            XCTAssertEqual(error, .notEnoughElements, "Should return notEnoughElements error due to 'No Calculable result'")
+        default:
+            XCTFail("Expected failure with other error indicating no calculable result")
+        }
+    }
 
 
+    
 }

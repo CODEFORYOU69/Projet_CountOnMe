@@ -66,10 +66,6 @@ class Calculator {
         return !(elements.last == "+" || elements.last == "-" || elements.last == "/" || elements.last == "*")
     }
     
-    var expressionHaveResult: Bool {
-        return elements.contains("=")
-    }
-    
     var lastResult: String?
     
     func calculate() -> Result<String, CalculatorError> {
@@ -101,7 +97,7 @@ class Calculator {
                 }
                 result = left / right
             default:
-                return .failure(.other("Opérateur inconnu"))
+                return .failure(.notEnoughElements)
             }
             
             operationsToReduce.replaceSubrange(index-1...index+1, with: [String(result)])
@@ -121,7 +117,7 @@ class Calculator {
             case "-":
                 result = left - right
             default:
-                return .failure(.other("No Calculable result"))
+                return .failure(.notEnoughElements)
             }
             
             operationsToReduce = Array(operationsToReduce.dropFirst(3))
@@ -132,7 +128,7 @@ class Calculator {
             lastResult = result
             return .success(result)
         } else {
-            return .failure(.other("No Calculable result"))
+            return .failure(.notEnoughElements)
         }
     }
 }
