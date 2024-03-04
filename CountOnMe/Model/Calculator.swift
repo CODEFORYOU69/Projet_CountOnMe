@@ -104,7 +104,7 @@ class Calculator {
             lastResult = String(finalResult)
             return .success(String(finalResult))
         }
-        return .success("Default Value") // Remplacez "Default Value" par ce que vous jugez approprié
+        return .success("")
         
     }
 }
