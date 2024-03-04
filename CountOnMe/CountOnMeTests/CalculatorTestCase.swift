@@ -132,6 +132,7 @@ final class CalculatorTestCase: XCTestCase {
             XCTFail("Expected not enought elements error")
         }
     }
+    
     // Test: Checking operator precedence with addition and multiplication
     func testOperatorPrecedenceWithAdditionAndMultiplication() {
         // Given
@@ -343,14 +344,12 @@ final class CalculatorTestCase: XCTestCase {
             XCTFail("Expected failure with other error indicating unknown operator")
         }
     }
+    
     func testCalculate_WhenNonCalculableExpression_ShouldReturnNoCalculableResultError() {
         // Given: a correct expression that somehow leads to a non-calculable state
         calculator.addElement("5")
         calculator.addElement("+")
-        // You might need to simulate a scenario that leads to a non-calculable result,
-        // which might be tricky if your code doesn't naturally allow it.
-        // This is more of a placeholder for situations where your logic might have gaps.
-
+        
         // When: calculating the result
         let result = calculator.calculate()
 

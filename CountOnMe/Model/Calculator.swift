@@ -13,7 +13,6 @@ class Calculator {
     enum CalculatorError: Error {
         case notEnoughElements
         case divisionByZero
-        case other(String)
     }
     
     var elements: [String] = []
@@ -69,67 +68,44 @@ class Calculator {
     var lastResult: String?
     
     func calculate() -> Result<String, CalculatorError> {
-        print("Calculating with elements: \(elements)")
-
-        
         guard expressionHaveEnoughElement else {
             print("Not enough elements")
-
             return .failure(.notEnoughElements)
         }
         
         var operationsToReduce = elements
         
+        // Gestion des multiplications et divisions
         while let index = operationsToReduce.firstIndex(where: { $0 == "*" || $0 == "/" }) {
             let operand = operationsToReduce[index]
-            guard let left = Double(operationsToReduce[index - 1]),
-                  let right = Double(operationsToReduce[index + 1]) else {
-                return .failure(.notEnoughElements)
-            }
-            
-            let result: Double
-            switch operand {
-            case "*":
-                result = left * right
-            case "/":
-                if right == 0 {
+            if let left = Double(operationsToReduce[index - 1]),
+               let right = Double(operationsToReduce[index + 1]) {
+                let result: Double = operand == "*" ? left * right : (right == 0 ? Double.nan : left / right)
+                if result.isNaN { // Vérifie si le résultat est NaN, ce qui indiquerait une division par zéro
                     return .failure(.divisionByZero)
                 }
-                result = left / right
-            default:
-                return .failure(.notEnoughElements)
+                operationsToReduce.replaceSubrange(index-1...index+1, with: [String(result)])
             }
-            
-            operationsToReduce.replaceSubrange(index-1...index+1, with: [String(result)])
         }
         
+        // Gestion des additions et soustractions
         while operationsToReduce.count > 1 {
-            guard let left = Double(operationsToReduce[0]),
-                  let right = Double(operationsToReduce[2]) else {
-                return .failure(.notEnoughElements)
-            }
-            let operand = operationsToReduce[1]
-            
-            let result: Double
-            switch operand {
-            case "+":
-                result = left + right
-            case "-":
-                result = left - right
-            default:
-                return .failure(.notEnoughElements)
-            }
-            
-            operationsToReduce = Array(operationsToReduce.dropFirst(3))
-            operationsToReduce.insert(String(result), at: 0)
+            if let index = operationsToReduce.firstIndex(where: { $0 == "+" || $0 == "-" }) {
+                let operand = operationsToReduce[index]
+                if let left = Double(operationsToReduce[index - 1]),
+                   let right = Double(operationsToReduce[index + 1]) {
+                    let result: Double = operand == "+" ? left + right : left - right
+                    operationsToReduce.replaceSubrange(index-1...index+1, with: [String(result)])
+                }
+            } 
         }
         
-        if let result = operationsToReduce.first {
-            lastResult = result
-            return .success(result)
-        } else {
-            return .failure(.notEnoughElements)
+        if let result = operationsToReduce.first, let finalResult = Double(result) {
+            lastResult = String(finalResult)
+            return .success(String(finalResult))
         }
+        return .success("Default Value") // Remplacez "Default Value" par ce que vous jugez approprié
+        
     }
 }
 extension Calculator.CalculatorError: Equatable {}

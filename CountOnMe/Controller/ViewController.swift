@@ -132,8 +132,7 @@ class ViewController: UIViewController {
                 message = "not enough elements !"
             case .divisionByZero:
                 message = "Can't divide by zero"
-            case .other(let errorMessage):
-                message = errorMessage
+            
                 
             }
             presentAlert(message: message)
